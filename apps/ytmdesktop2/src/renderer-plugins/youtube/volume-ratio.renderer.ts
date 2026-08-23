@@ -6,9 +6,14 @@ import { disableVolumeRatio, enableVolumeRatio } from "./resources/volume-ratio/
 import type { RendererPluginRegistration } from "./world0/types";
 
 const SETTING_KEY = "volumeRatio.enabled";
+const CAST_SESSION_EVENT = "ytmd-cast-session";
 
-function applyEnabled(enabled: boolean): void {
-	if (enabled) enableVolumeRatio();
+function isCastSessionActive(): boolean {
+	return (window as Window & { __ytmdCastConnected?: boolean }).__ytmdCastConnected === true;
+}
+
+function applyEnabled(userEnabled: boolean, castConnected = isCastSessionActive()): void {
+	if (userEnabled && !castConnected) enableVolumeRatio();
 	else disableVolumeRatio();
 	forceUpdateVolume();
 }
@@ -20,26 +25,37 @@ const volumeRatioRenderer: RendererPluginRegistration = {
 	id: "volume-ratio",
 	enabled: true,
 	async start(ctx) {
+		let userEnabled = false;
 		const offBridge = volumeRatioPage.listen(ctx.log);
+
+		const onCastSession = (ev: Event) => {
+			const connected = (ev as CustomEvent<{ connected?: boolean }>).detail?.connected === true;
+			applyEnabled(userEnabled, connected);
+		};
+		window.addEventListener(CAST_SESSION_EVENT, onCastSession);
 
 		const offSettings = ctx.ytmd?.on("settingsProvider.change", (key, value) => {
 			if (key === SETTING_KEY) {
-				applyEnabled(value === true);
+				userEnabled = value === true;
+				applyEnabled(userEnabled);
 				return;
 			}
 			if (key === "volumeRatio" && value && typeof value === "object") {
-				applyEnabled((value as { enabled?: boolean }).enabled === true);
+				userEnabled = (value as { enabled?: boolean }).enabled === true;
+				applyEnabled(userEnabled);
 			}
 		});
 
 		try {
 			const v = await ctx.ytmd?.settings.get(SETTING_KEY);
-			if (v === true) applyEnabled(true);
+			userEnabled = v === true;
+			applyEnabled(userEnabled);
 		} catch {
 			/* ignore */
 		}
 
 		return () => {
+			window.removeEventListener(CAST_SESSION_EVENT, onCastSession);
 			offBridge();
 			offSettings?.();
 			disableVolumeRatio();
@@ -49,7 +65,7 @@ const volumeRatioRenderer: RendererPluginRegistration = {
 		void ctx.ytmd?.settings.get(SETTING_KEY).then((v) => {
 			if (v !== true) return;
 			try {
-				enableVolumeRatio();
+				applyEnabled(true);
 				playerApi.setVolume(playerApi.getVolume());
 			} catch {
 				/* ignore */

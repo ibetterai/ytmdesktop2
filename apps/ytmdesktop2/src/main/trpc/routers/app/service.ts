@@ -34,6 +34,12 @@ const SETTINGS_REQUIRING_RESTART: Record<string, RestartDialogOptions> = {
     width: 400,
     height: 260,
   },
+  "player.chromecastEnabled": {
+    message: "Chromecast changes require a restart to apply.",
+    icon: "warning",
+    width: 400,
+    height: 260,
+  },
 };
 
 onMusicReload(() => {

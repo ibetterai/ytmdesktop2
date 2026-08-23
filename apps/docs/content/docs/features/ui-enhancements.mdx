@@ -13,13 +13,14 @@ These plugins load with the music view. No toggle.
 | --- | --- |
 | **Toast auto-close** (`toast-autoclose`) | YouTube Music "Saved to liked music" (and similar) paper toasts stay open until you dismiss them. The plugin closes open `tp-yt-paper-toast` toasts after **3 seconds**. |
 | **Performance fixes** (`perf-fixes`) | Lowers background CPU use in the embedded player (CPU tamer + related patches; same idea as community YouTube Music clients). |
-| **Cast button hide** | Hides the Chromecast control in the music chrome (not useful in this desktop shell). |
+| **Cast button** | Hidden by default. Enable **Settings > Player > Enable Chromecast** and restart to use YouTube Music Cast on the LAN. |
 
 ## Settings > Player
 
 | Setting | Plugin / behavior |
 | --- | --- |
 | **Skip disliked songs** | `track-like` auto-skips tracks you have disliked (experimental). |
+| **Enable Chromecast** | Shows the YTM Cast button and shims `chrome.cast` in the isolated YouTube view. mDNS and Cast TCP (`castv2`) run in the main process so YTM Trusted Types / CSP cannot block protobuf encode (experimental, restart required). |
 | **Exponential volume ratio** | `volume-ratio` exponential volume curve instead of linear. |
 | **Customize player video settings** | `player-quality` preferred resolution (720p-4K) when available. |
 | **Replace share links with ytmd://** | `share-links` rewrites the YTM share dialog URL - see [Shared links](/docs/features/shared-links). |

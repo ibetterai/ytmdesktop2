@@ -22,6 +22,7 @@ allowBuilds:
   electron-winstaller: true
   esbuild: true
   lefthook: true
+  protobufjs: true
   sharp: true
   utf-8-validate: true
 

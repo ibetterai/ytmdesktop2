@@ -42,11 +42,21 @@ export class PluginManager {
 	private settingsPromise: Promise<any>;
 	private destroyFns: (() => void)[] = [];
 	private isLoaded = false;
+	private chromecastShimReady = false;
+	private undoHideChromecast: (() => void) | null = null;
 	private pluginUtils = createPluginUtils();
 
 	constructor() {
 		this.settingsPromise = this.loadSettings();
 		this.loadPlugins();
+	}
+
+	public setChromecastShimReady(ready: boolean): void {
+		this.chromecastShimReady = ready;
+		if (ready) {
+			this.undoHideChromecast?.();
+			this.undoHideChromecast = null;
+		}
 	}
 
 	private async loadSettings(): Promise<void> {
@@ -237,12 +247,13 @@ export class PluginManager {
 		);
 	}
 	private async removeChromecastIcon() {
+		if (this.chromecastShimReady) return;
 		const style = await getPreloadDomUtils().createStyle(`
       ytmusic-cast-button.cast-button {
         display: none !important;
       }
     `);
-		return () => style();
+		this.undoHideChromecast = () => style();
 	}
 	public async initialize(force?: boolean): Promise<void> {
 		console.info("[YTMD][preload] initialize enter", { readyState: document.readyState, force: !!force });

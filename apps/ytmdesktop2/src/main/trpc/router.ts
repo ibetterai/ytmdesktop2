@@ -5,6 +5,7 @@ import { apiRouter } from "@main/trpc/routers/api";
 import { appServiceRouter } from "@main/trpc/routers/app";
 import { authRouter } from "@main/trpc/routers/auth";
 import { discordRouter } from "@main/trpc/routers/discord";
+import { chromecastRouter } from "@main/trpc/routers/chromecast";
 import { lastfmRouter } from "@main/trpc/routers/lastfm";
 import { navigationRouter } from "@main/trpc/routers/navigation";
 import { settingsRouter } from "@main/trpc/routers/settings";
@@ -33,6 +34,7 @@ export const appRouter = router({
 	trayView: trayViewRouter,
 	themes: themesRouter,
 	lastfm: lastfmRouter,
+	chromecast: chromecastRouter,
 	window: windowRouter,
 	discord: discordRouter,
 });

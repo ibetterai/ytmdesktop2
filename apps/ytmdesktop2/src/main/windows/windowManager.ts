@@ -1,4 +1,6 @@
 import { applyYoutubeZoom, bindYoutubeWebContents, TOOLBAR_HEIGHT } from "@main/domain/uiZoom";
+import { getLifecycleContext } from "@main/lifecycle";
+import { chromecastArgvFor, CHROMECAST_SETTING_KEY } from "@shared/chromecast/flag";
 import { defaultUrl, isDevelopment, isProdDebug, isProduction } from "@main/infra/devUtils";
 import { toChromeUserAgent } from "@main/infra/userAgent";
 import { serverMain } from "@main/ipc/serverEvents";
@@ -12,6 +14,15 @@ import { createWindowContext } from "./mappedWindow";
 import { createApiView, createView, googleLoginPopup } from "./view";
 import { pushWindowStates } from "./webContentUtils";
 import { getBoundsWithScaleFactor, wrapWindowHandler } from "./windowUtils";
+function isChromecastSettingEnabled(): boolean {
+	try {
+		const settings = getLifecycleContext().getProvider("settings") as { get?: (key: string, fallback?: boolean) => boolean };
+		return !!settings?.get?.(CHROMECAST_SETTING_KEY, false);
+	} catch {
+		return false;
+	}
+}
+
 export function isGoogleLoginUrl(url: URL): boolean {
 	return /^accounts\.google\.(\w+)/.test(url.hostname);
 }
@@ -160,6 +171,7 @@ export class WindowManager {
 				contextIsolation: true,
 				nodeIntegration: false,
 				backgroundThrottling: false,
+				additionalArguments: [chromecastArgvFor(isChromecastSettingEnabled())],
 			},
 		);
 	}

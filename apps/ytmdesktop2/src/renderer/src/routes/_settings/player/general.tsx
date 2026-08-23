@@ -42,6 +42,17 @@ function PlayerGeneralSettingsPage() {
 						<SettingsCheckbox configKey="app.enableTaskbarProgress" description="Show playback progress on the taskbar.">
 							Enable Taskbar Progress
 						</SettingsCheckbox>
+						<SettingsCheckbox
+							configKey="player.chromecastEnabled"
+							description={
+								<span className="inline-flex items-center gap-2">
+									Show YouTube Music Cast and talk to devices on this LAN. Restart required. Firewall must allow mDNS.
+									<Badge variant="outline">Experimental</Badge>
+								</span>
+							}
+						>
+							Enable Chromecast
+						</SettingsCheckbox>
 					</FieldGroup>
 				</CardContent>
 			</Card>

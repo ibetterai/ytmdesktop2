@@ -58,6 +58,8 @@ const defaultSettings = {
 		deepLinkOpen: "ask" as "ask" | "play",
 		/** Rewrite YTM “Copy link” clipboard URLs to `ytmd://` */
 		replaceShareLinks: true,
+		/** Native YTM Cast via in-app chrome.cast shim. Off until restart. */
+		chromecastEnabled: false,
 		res: {
 			enabled: false,
 			prefer: "auto",

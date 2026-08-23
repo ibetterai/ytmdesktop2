@@ -1,9 +1,10 @@
+import { isChromecastEnabledFromArgv } from "@shared/chromecast/flag";
 import { logger } from "@shared/utils/console";
 import { contextBridge, webFrame } from "electron";
 import pkg from "../../package.json";
 import exposeData, { assignPreload, exposeToPage, settingsProvider } from "./base";
 import { preloadLocal } from "./preload-local";
-import { createContextExposer, createDomUtils, createInitializationUtils, createPreloadLogger } from "./utils";
+import { createContextExposer, createDomUtils, createInitializationUtils, createPreloadLogger, isYoutubeMusicHost } from "./utils";
 import { YTMD_AGENT_SOURCE } from "./ytmd-agent";
 import { createYtmdBridge } from "./ytmd-bridge";
 
@@ -70,9 +71,24 @@ window.__ytmd_loadingPromise = domUtils.createLoadingPromise();
 assignPreload("__initYTMD", initFn);
 
 let bootStarted = false;
+async function bootChromecastShim(): Promise<boolean> {
+	if (!isChromecastEnabledFromArgv(process.argv)) return false;
+	try {
+		const { startChromecastShim } = await import("./chromecast");
+		return await startChromecastShim();
+	} catch (err) {
+		log.warn("chromecast shim failed", err);
+		return false;
+	}
+}
+
 async function bootYtmd(): Promise<void> {
 	// Agent must listen before plugins post ytmd-ready, else page isYTMLoaded stays false.
 	await injectYtmdAgent();
+	if (isChromecastEnabledFromArgv(process.argv) && isYoutubeMusicHost()) {
+		const ok = await bootChromecastShim();
+		pluginManager.setChromecastShimReady(ok);
+	}
 	await initFn();
 }
 function scheduleBoot(from: string): void {
