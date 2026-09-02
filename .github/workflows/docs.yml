@@ -7,7 +7,6 @@ on:
   # (github-pages env protection rejects tag refs like v1.0.2).
   push:
     branches:
-      - master
       - main
     paths:
       - "apps/docs/**"
