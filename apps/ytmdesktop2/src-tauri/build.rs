@@ -4,6 +4,7 @@ fn main() {
             "tauri_shell_info",
             "tauri_main_window_state",
             "tauri_window_control",
+            "tauri_media_session_update",
             "tauri_plugin_bridge",
         ]),
     ))

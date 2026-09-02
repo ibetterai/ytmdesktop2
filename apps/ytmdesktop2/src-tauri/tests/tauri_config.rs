@@ -38,6 +38,7 @@ fn grants_only_the_tauri_commands_to_the_main_window() {
             "allow-tauri-shell-info",
             "allow-tauri-window-control",
             "allow-tauri-main-window-state",
+            "allow-tauri-media-session-update",
             "allow-tauri-plugin-bridge"
         ])
     );

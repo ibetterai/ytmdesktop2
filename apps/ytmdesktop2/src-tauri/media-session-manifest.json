@@ -1,0 +1,29 @@
+{
+  "contractVersion": 1,
+  "callers": [
+    {
+      "webview": "main",
+      "origins": [
+        "tauri://localhost",
+        "http://tauri.localhost",
+        "https://tauri.localhost"
+      ],
+      "capability": "allow-tauri-media-session-update"
+    }
+  ],
+  "methods": [
+    {
+      "name": "mediaSession.updateState",
+      "request": "MediaSessionStateRequest",
+      "response": "MediaSessionUpdateResult",
+      "errors": ["invalidRequest", "unauthorizedCaller", "unsupported", "unavailable", "operationFailed"]
+    }
+  ],
+  "events": [
+    {
+      "name": "mediaSession.command",
+      "payload": "MediaSessionCommandEvent",
+      "callers": ["main"]
+    }
+  ]
+}
