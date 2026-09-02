@@ -18,3 +18,18 @@ fn defines_an_unsigned_blank_host_window() {
     assert_eq!(windows[0]["label"], "main");
     assert_eq!(windows[0]["title"], "YTMDesktop2 Tauri Feasibility");
 }
+
+#[test]
+fn grants_only_shell_info_to_the_main_window() {
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let capability = fs::read_to_string(manifest_dir.join("capabilities/main.json"))
+        .expect("feasibility shell has a main-window capability");
+    let capability: serde_json::Value =
+        serde_json::from_str(&capability).expect("capability configuration is valid JSON");
+
+    assert_eq!(capability["windows"], serde_json::json!(["main"]));
+    assert_eq!(
+        capability["permissions"],
+        serde_json::json!(["allow-tauri-shell-info"])
+    );
+}
