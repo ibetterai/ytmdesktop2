@@ -28,6 +28,36 @@ fn tauri_shell_info() -> TauriShellInfo {
     TauriShellInfo::current()
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TauriMainWindowState {
+    is_maximized: bool,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TauriMainWindowStateError {
+    code: TauriMainWindowStateErrorCode,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+enum TauriMainWindowStateErrorCode {
+    WindowStateUnavailable,
+}
+
+#[tauri::command]
+fn tauri_main_window_state(
+    window: tauri::WebviewWindow,
+) -> Result<TauriMainWindowState, TauriMainWindowStateError> {
+    window
+        .is_maximized()
+        .map(|is_maximized| TauriMainWindowState { is_maximized })
+        .map_err(|_| TauriMainWindowStateError {
+            code: TauriMainWindowStateErrorCode::WindowStateUnavailable,
+        })
+}
+
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct TauriWindowControlRequest {
@@ -104,6 +134,7 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             tauri_shell_info,
+            tauri_main_window_state,
             tauri_window_control
         ])
         .run(tauri::generate_context!())
@@ -135,6 +166,27 @@ mod tests {
                 "shellId": "ytmdesktop2-tauri-feasibility",
                 "shellVersion": env!("CARGO_PKG_VERSION"),
             })
+        );
+    }
+
+    #[test]
+    fn main_window_state_serializes_to_the_camel_case_contract() {
+        let state = serde_json::to_value(TauriMainWindowState { is_maximized: true })
+            .expect("main window state is serializable");
+
+        assert_eq!(state, serde_json::json!({ "isMaximized": true }));
+    }
+
+    #[test]
+    fn main_window_state_error_serializes_without_native_details() {
+        let error = serde_json::to_value(TauriMainWindowStateError {
+            code: TauriMainWindowStateErrorCode::WindowStateUnavailable,
+        })
+        .expect("main window state error is serializable");
+
+        assert_eq!(
+            error,
+            serde_json::json!({ "code": "windowStateUnavailable" })
         );
     }
 
