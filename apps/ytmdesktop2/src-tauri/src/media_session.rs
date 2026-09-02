@@ -4,7 +4,13 @@ use serde_json::Value;
 pub const MEDIA_SESSION_CONTRACT_VERSION: u8 = 1;
 
 const MAIN_WEBVIEW_LABEL: &str = "main";
-const MAIN_WEBVIEW_ORIGIN: &str = "tauri://localhost";
+// Tauri 2.11.5 serves bundled assets through the custom `tauri` protocol on most
+// platforms and through these Wry-compatible localhost origins on Windows/Android.
+const MAIN_WEBVIEW_ORIGINS: [&str; 3] = [
+    "tauri://localhost",
+    "http://tauri.localhost",
+    "https://tauri.localhost",
+];
 const MAX_TEXT_LENGTH: usize = 512;
 const MAX_TRACK_ID_LENGTH: usize = 128;
 const MAX_POSITION_MILLIS: u64 = 86_400_000;
@@ -109,7 +115,7 @@ fn error(code: MediaSessionErrorCode) -> MediaSessionUpdateResult {
 }
 
 fn is_authorized_caller(label: &str, origin: &str) -> bool {
-    label == MAIN_WEBVIEW_LABEL && origin == MAIN_WEBVIEW_ORIGIN
+    label == MAIN_WEBVIEW_LABEL && MAIN_WEBVIEW_ORIGINS.contains(&origin)
 }
 
 fn is_bounded_text(value: &str, max_length: usize) -> bool {
@@ -195,11 +201,17 @@ fn dispatch_update(
         .unwrap_or_else(map_backend_error)
 }
 
+fn origin_from_url(url: &tauri::Url) -> Option<String> {
+    let host = url.host_str()?;
+    let origin = match url.port() {
+        Some(port) => format!("{}://{host}:{port}", url.scheme()),
+        None => format!("{}://{host}", url.scheme()),
+    };
+    Some(origin)
+}
+
 fn webview_origin(window: &tauri::WebviewWindow) -> Option<String> {
-    window.url().ok().and_then(|url| {
-        url.host_str()
-            .map(|host| format!("{}://{}", url.scheme(), host))
-    })
+    window.url().ok().and_then(|url| origin_from_url(&url))
 }
 
 /// The sole state-changing media-session command in the inactive feasibility shell.
@@ -244,7 +256,7 @@ mod tests {
             manifest["callers"],
             serde_json::json!([{
                 "webview": MAIN_WEBVIEW_LABEL,
-                "origin": MAIN_WEBVIEW_ORIGIN,
+                "origins": MAIN_WEBVIEW_ORIGINS,
                 "capability": "allow-tauri-media-session-update",
             }])
         );
@@ -325,6 +337,44 @@ mod tests {
         assert_eq!(
             dispatch_update("main", "tauri://localhost", serde_json::json!({})),
             error(MediaSessionErrorCode::InvalidRequest)
+        );
+    }
+
+    #[test]
+    fn accepts_each_platform_bundled_origin_and_keeps_the_backend_inactive() {
+        for origin in [
+            "tauri://localhost",
+            "http://tauri.localhost",
+            "https://tauri.localhost",
+        ] {
+            assert_eq!(
+                dispatch_update("main", origin, valid_request()),
+                error(MediaSessionErrorCode::Unavailable),
+                "{origin} must be accepted only for the bundled main webview",
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_remote_lookalikes_of_the_bundled_tauri_origin() {
+        for origin in [
+            "https://tauri.localhost.evil.example",
+            "https://evil.tauri.localhost",
+            "http://tauri.localhost:8443",
+            "tauri://localhost.evil",
+        ] {
+            assert_eq!(
+                dispatch_update("main", origin, valid_request()),
+                error(MediaSessionErrorCode::UnauthorizedCaller),
+                "{origin} must not be trusted as a bundled origin",
+            );
+        }
+
+        let remote_lookalike = tauri::Url::parse("http://tauri.localhost:8443/index.html")
+            .expect("lookalike test URL is valid");
+        assert_eq!(
+            origin_from_url(&remote_lookalike).as_deref(),
+            Some("http://tauri.localhost:8443"),
         );
     }
 

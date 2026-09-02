@@ -3,7 +3,11 @@
   "callers": [
     {
       "webview": "main",
-      "origin": "tauri://localhost",
+      "origins": [
+        "tauri://localhost",
+        "http://tauri.localhost",
+        "https://tauri.localhost"
+      ],
       "capability": "allow-tauri-media-session-update"
     }
   ],
