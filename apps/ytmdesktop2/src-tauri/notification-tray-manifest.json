@@ -1,0 +1,34 @@
+{
+  "contractVersion": 1,
+  "callers": [
+    {
+      "webview": "main",
+      "origin": "tauri://localhost",
+      "capabilities": [
+        "allow-tauri-notification-present",
+        "allow-tauri-tray-set-registration"
+      ]
+    }
+  ],
+  "methods": [
+    {
+      "name": "notification.present",
+      "request": "NotificationPresentRequest",
+      "response": "NotificationTrayResult",
+      "errors": ["invalidRequest", "unauthorizedCaller", "unsupported", "unavailable", "operationFailed"]
+    },
+    {
+      "name": "tray.setRegistration",
+      "request": "TrayRegistrationRequest",
+      "response": "NotificationTrayResult",
+      "errors": ["invalidRequest", "unauthorizedCaller", "unsupported", "unavailable", "operationFailed"]
+    }
+  ],
+  "events": [
+    {
+      "name": "tray.activated",
+      "payload": "TrayActivatedEvent",
+      "callers": ["main"]
+    }
+  ]
+}

@@ -40,6 +40,8 @@ fn grants_only_the_tauri_commands_to_the_main_window() {
             "allow-tauri-main-window-state",
             "allow-tauri-media-session-update",
             "allow-tauri-global-shortcut-set-registration",
+            "allow-tauri-notification-present",
+            "allow-tauri-tray-set-registration",
             "allow-tauri-plugin-bridge"
         ])
     );

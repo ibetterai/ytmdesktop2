@@ -2,6 +2,7 @@
 
 mod global_shortcut;
 mod media_session;
+mod notification_tray;
 mod plugin_bridge;
 mod settings;
 
@@ -143,6 +144,8 @@ fn main() {
             tauri_window_control,
             media_session::tauri_media_session_update,
             global_shortcut::tauri_global_shortcut_set_registration,
+            notification_tray::tauri_notification_present,
+            notification_tray::tauri_tray_set_registration,
             plugin_bridge::tauri_plugin_bridge
         ])
         .manage(settings::SettingsSnapshotState::feasibility_defaults())

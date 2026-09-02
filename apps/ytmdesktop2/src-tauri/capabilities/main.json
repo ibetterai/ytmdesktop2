@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main",
-  "description": "Allows the main feasibility window to read shell information, query its state, control only itself, use the fixed bridge contract, and update its inactive media-session and global-shortcut seams.",
+  "description": "Allows the main feasibility window to read shell information, query its state, control only itself, use the fixed bridge contract, and update its inactive media-session, global-shortcut, notification, and tray seams.",
   "windows": ["main"],
   "permissions": [
     "allow-tauri-shell-info",
@@ -9,6 +9,8 @@
     "allow-tauri-main-window-state",
     "allow-tauri-media-session-update",
     "allow-tauri-global-shortcut-set-registration",
+    "allow-tauri-notification-present",
+    "allow-tauri-tray-set-registration",
     "allow-tauri-plugin-bridge"
   ]
 }
