@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-tauri-global-shortcut-set-registration"
+description = "Enables the tauri_global_shortcut_set_registration command without any pre-configured scope."
+commands.allow = ["tauri_global_shortcut_set_registration"]
+
+[[permission]]
+identifier = "deny-tauri-global-shortcut-set-registration"
+description = "Denies the tauri_global_shortcut_set_registration command without any pre-configured scope."
+commands.deny = ["tauri_global_shortcut_set_registration"]

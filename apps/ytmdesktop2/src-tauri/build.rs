@@ -5,6 +5,7 @@ fn main() {
             "tauri_main_window_state",
             "tauri_window_control",
             "tauri_media_session_update",
+            "tauri_global_shortcut_set_registration",
             "tauri_plugin_bridge",
         ]),
     ))

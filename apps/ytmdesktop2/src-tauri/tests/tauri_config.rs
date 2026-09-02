@@ -39,6 +39,7 @@ fn grants_only_the_tauri_commands_to_the_main_window() {
             "allow-tauri-window-control",
             "allow-tauri-main-window-state",
             "allow-tauri-media-session-update",
+            "allow-tauri-global-shortcut-set-registration",
             "allow-tauri-plugin-bridge"
         ])
     );
@@ -46,4 +47,26 @@ fn grants_only_the_tauri_commands_to_the_main_window() {
         .as_array()
         .expect("capability permissions are an array")
         .contains(&bridge_manifest["callers"][0]["capability"]));
+}
+
+#[test]
+fn global_shortcut_manifest_scopes_windows_bundled_origins_to_main_only() {
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let manifest = fs::read_to_string(manifest_dir.join("global-shortcut-manifest.json"))
+        .expect("global shortcut manifest exists");
+    let manifest: serde_json::Value =
+        serde_json::from_str(&manifest).expect("global shortcut manifest is valid JSON");
+
+    assert_eq!(
+        manifest["callers"],
+        serde_json::json!([{
+            "webview": "main",
+            "origins": [
+                "tauri://localhost",
+                "http://tauri.localhost",
+                "https://tauri.localhost",
+            ],
+            "capability": "allow-tauri-global-shortcut-set-registration",
+        }])
+    );
 }
