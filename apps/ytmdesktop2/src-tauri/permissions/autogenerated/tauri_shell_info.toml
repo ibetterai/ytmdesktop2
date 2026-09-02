@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-tauri-shell-info"
+description = "Enables the tauri_shell_info command without any pre-configured scope."
+commands.allow = ["tauri_shell_info"]
+
+[[permission]]
+identifier = "deny-tauri-shell-info"
+description = "Denies the tauri_shell_info command without any pre-configured scope."
+commands.deny = ["tauri_shell_info"]

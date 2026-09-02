@@ -4439,6 +4439,7 @@ dependencies = [
 name = "ytmdesktop2-tauri-feasibility"
 version = "0.0.0"
 dependencies = [
+ "serde",
  "serde_json",
  "tauri",
  "tauri-build",

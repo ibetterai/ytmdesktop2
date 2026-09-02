@@ -9,6 +9,7 @@ publish = false
 tauri-build = "=2.6.3"
 
 [dependencies]
+serde = { version = "1.0", features = ["derive"] }
 tauri = "=2.11.5"
 
 [dev-dependencies]
