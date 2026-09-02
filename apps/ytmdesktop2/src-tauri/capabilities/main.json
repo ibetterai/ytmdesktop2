@@ -1,12 +1,13 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main",
-  "description": "Allows the main feasibility window to read shell information, query its state, control only itself, and use the fixed bridge contract.",
+  "description": "Allows the main feasibility window to read shell information, query its state, control only itself, use the fixed bridge contract, and update its inactive media-session seam.",
   "windows": ["main"],
   "permissions": [
     "allow-tauri-shell-info",
     "allow-tauri-window-control",
     "allow-tauri-main-window-state",
+    "allow-tauri-media-session-update",
     "allow-tauri-plugin-bridge"
   ]
 }
