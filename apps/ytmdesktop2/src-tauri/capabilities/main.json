@@ -6,6 +6,7 @@
   "permissions": [
     "allow-tauri-shell-info",
     "allow-tauri-window-control",
-    "allow-tauri-main-window-state"
+    "allow-tauri-main-window-state",
+    "allow-tauri-settings-snapshot"
   ]
 }
