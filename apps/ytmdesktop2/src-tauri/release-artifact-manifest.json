@@ -1,0 +1,7 @@
+{
+  "platform": "macos",
+  "arch": "aarch64",
+  "version": "0.0.0",
+  "channel": "test",
+  "identifier": "com.ibetterai.ytmdesktop2.tauri-spike"
+}

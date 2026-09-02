@@ -14,6 +14,16 @@ pnpm --filter ytmdesktop2 tauri:dev
 
 `tauri:check` runs `cargo fmt --check` and `cargo test`; it compiles the Tauri shell and validates the Tauri configuration without opening a display window. `tauri:dev` runs the same isolated crate and opens the blank host window.
 
+## Test artifact contract
+
+`release-artifact-manifest.json` is the only release-shaped configuration in this
+feasibility seam. It describes one unsigned, macOS/aarch64 **test** artifact and
+uses the distinct Tauri-spike identifier. `src/tauri-release-artifact.ts` fixes
+its input manifest and nominal output directory under `src-tauri/target`; it
+does not accept command-line paths, create artifacts, publish artifacts, contact
+an update endpoint, or expose signing details. Its staging verification output is
+limited to `identityMismatch`, `unsupportedTarget`, and `unsignedArtifact`.
+
 ## Boundary and rollback
 
 The Electron startup path, renderer routes, feature APIs, updater, signing, packaging, package identity, and release workflow are intentionally untouched. The only repository-level integration is the two `tauri:*` scripts in `apps/ytmdesktop2/package.json` and the non-GUI `tauri-feasibility` check in `.github/workflows/test.yml`.
