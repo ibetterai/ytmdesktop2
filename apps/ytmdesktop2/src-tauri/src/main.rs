@@ -1,6 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 const CONTRACT_VERSION: u8 = 1;
 const SHELL_ID: &str = "ytmdesktop2-tauri-feasibility";
@@ -28,9 +28,84 @@ fn tauri_shell_info() -> TauriShellInfo {
     TauriShellInfo::current()
 }
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct TauriWindowControlRequest {
+    action: TauriWindowControlAction,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+enum TauriWindowControlAction {
+    Minimize,
+    ToggleMaximize,
+}
+
+#[derive(Debug, PartialEq, Serialize)]
+#[serde(tag = "action", rename_all = "camelCase")]
+enum TauriWindowControlResponse {
+    Minimize,
+    ToggleMaximize {
+        #[serde(rename = "isMaximized")]
+        is_maximized: bool,
+    },
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TauriWindowControlError {
+    code: TauriWindowControlErrorCode,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+enum TauriWindowControlErrorCode {
+    WindowControlFailed,
+}
+
+fn toggle_maximize_response(is_maximized: bool) -> TauriWindowControlResponse {
+    TauriWindowControlResponse::ToggleMaximize {
+        is_maximized: !is_maximized,
+    }
+}
+
+#[tauri::command]
+fn tauri_window_control(
+    window: tauri::WebviewWindow,
+    request: TauriWindowControlRequest,
+) -> Result<TauriWindowControlResponse, TauriWindowControlError> {
+    match request.action {
+        TauriWindowControlAction::Minimize => window
+            .minimize()
+            .map(|_| TauriWindowControlResponse::Minimize)
+            .map_err(|_| TauriWindowControlError {
+                code: TauriWindowControlErrorCode::WindowControlFailed,
+            }),
+        TauriWindowControlAction::ToggleMaximize => {
+            let is_maximized = window.is_maximized().map_err(|_| TauriWindowControlError {
+                code: TauriWindowControlErrorCode::WindowControlFailed,
+            })?;
+            let response = toggle_maximize_response(is_maximized);
+
+            if is_maximized {
+                window.unmaximize()
+            } else {
+                window.maximize()
+            }
+            .map(|_| response)
+            .map_err(|_| TauriWindowControlError {
+                code: TauriWindowControlErrorCode::WindowControlFailed,
+            })
+        }
+    }
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![tauri_shell_info])
+        .invoke_handler(tauri::generate_handler![
+            tauri_shell_info,
+            tauri_window_control
+        ])
         .run(tauri::generate_context!())
         .expect("error while running Tauri feasibility shell");
 }
@@ -60,6 +135,45 @@ mod tests {
                 "shellId": "ytmdesktop2-tauri-feasibility",
                 "shellVersion": env!("CARGO_PKG_VERSION"),
             })
+        );
+    }
+
+    #[test]
+    fn window_control_success_variants_serialize_to_the_contract() {
+        let minimize = serde_json::to_value(TauriWindowControlResponse::Minimize)
+            .expect("minimize response is serializable");
+        let toggle =
+            serde_json::to_value(TauriWindowControlResponse::ToggleMaximize { is_maximized: true })
+                .expect("toggle response is serializable");
+
+        assert_eq!(minimize, serde_json::json!({ "action": "minimize" }));
+        assert_eq!(
+            toggle,
+            serde_json::json!({ "action": "toggleMaximize", "isMaximized": true })
+        );
+    }
+
+    #[test]
+    fn window_control_error_serializes_without_native_details() {
+        let error = serde_json::to_value(TauriWindowControlError {
+            code: TauriWindowControlErrorCode::WindowControlFailed,
+        })
+        .expect("window control error is serializable");
+
+        assert_eq!(error, serde_json::json!({ "code": "windowControlFailed" }));
+    }
+
+    #[test]
+    fn toggle_maximize_response_inverts_the_current_state() {
+        assert_eq!(
+            toggle_maximize_response(false),
+            TauriWindowControlResponse::ToggleMaximize { is_maximized: true }
+        );
+        assert_eq!(
+            toggle_maximize_response(true),
+            TauriWindowControlResponse::ToggleMaximize {
+                is_maximized: false
+            }
         );
     }
 }
