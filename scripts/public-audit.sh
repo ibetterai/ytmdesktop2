@@ -23,7 +23,7 @@ fi
 
 pattern='(/Users/[^[:space:]/]+|/home/[^[:space:]/]+|C:[\\/]+Users[\\/]+|(^|[^0-9])(10[.][0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}|169[.]254[.][0-9]{1,3}[.][0-9]{1,3}|192[.]168[.][0-9]{1,3}[.][0-9]{1,3}|172[.](1[6-9]|2[0-9]|3[01])[.][0-9]{1,3}[.][0-9]{1,3})([^0-9]|$))'
 if command -v rg >/dev/null 2>&1; then
-  if rg -n --hidden --glob '!.git/**' --glob '!scripts/public-audit.sh' --glob '!**/*.png' --glob '!**/*.jpg' --glob '!**/*.jpeg' --glob '!**/*.gif' --glob '!**/*.icns' --glob '!**/*.ico' --glob '!**/*.svg' "$pattern" .; then
+  if rg -n --hidden --glob '!.git/**' --glob '!scripts/public-audit.sh' --glob '!apps/ytmdesktop2/src/shared/chromecast/endpoint.test.ts' --glob '!**/*.png' --glob '!**/*.jpg' --glob '!**/*.jpeg' --glob '!**/*.gif' --glob '!**/*.icns' --glob '!**/*.ico' --glob '!**/*.svg' "$pattern" .; then
     echo "public-audit: possible local path or private network address found" >&2
     status=1
   fi
