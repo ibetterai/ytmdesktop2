@@ -1,0 +1,4 @@
+{
+  "inputManifest": "src-tauri/target/test-artifacts/input/release-artifact-manifest.json",
+  "outputDirectory": "src-tauri/target/test-artifacts/output"
+}
