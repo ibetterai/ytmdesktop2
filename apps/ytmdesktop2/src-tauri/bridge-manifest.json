@@ -1,0 +1,25 @@
+{
+  "contractVersion": 1,
+  "callers": [
+    {
+      "webview": "main",
+      "origin": "tauri://localhost",
+      "capability": "allow-tauri-plugin-bridge"
+    }
+  ],
+  "methods": [
+    {
+      "name": "settings.snapshot",
+      "request": "SettingsSnapshotRequest",
+      "response": "SettingsSnapshot",
+      "errors": ["unsupportedCommand", "unauthorizedCaller", "invalidRequest", "pluginFailed"]
+    }
+  ],
+  "events": [
+    {
+      "name": "settings.changed",
+      "payload": "SettingsChangedEvent",
+      "callers": ["main"]
+    }
+  ]
+}

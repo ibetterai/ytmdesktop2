@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod plugin_bridge;
 mod settings;
 
 use serde::{Deserialize, Serialize};
@@ -138,7 +139,7 @@ fn main() {
             tauri_shell_info,
             tauri_main_window_state,
             tauri_window_control,
-            settings::tauri_settings_snapshot
+            plugin_bridge::tauri_plugin_bridge
         ])
         .manage(settings::SettingsSnapshotState::feasibility_defaults())
         .run(tauri::generate_context!())

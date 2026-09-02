@@ -26,6 +26,10 @@ fn grants_only_the_tauri_commands_to_the_main_window() {
         .expect("feasibility shell has a main-window capability");
     let capability: serde_json::Value =
         serde_json::from_str(&capability).expect("capability configuration is valid JSON");
+    let bridge_manifest = fs::read_to_string(manifest_dir.join("bridge-manifest.json"))
+        .expect("bridge manifest exists");
+    let bridge_manifest: serde_json::Value =
+        serde_json::from_str(&bridge_manifest).expect("bridge manifest is valid JSON");
 
     assert_eq!(capability["windows"], serde_json::json!(["main"]));
     assert_eq!(
@@ -34,7 +38,11 @@ fn grants_only_the_tauri_commands_to_the_main_window() {
             "allow-tauri-shell-info",
             "allow-tauri-window-control",
             "allow-tauri-main-window-state",
-            "allow-tauri-settings-snapshot"
+            "allow-tauri-plugin-bridge"
         ])
     );
+    assert!(capability["permissions"]
+        .as_array()
+        .expect("capability permissions are an array")
+        .contains(&bridge_manifest["callers"][0]["capability"]));
 }
