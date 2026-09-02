@@ -40,6 +40,8 @@ fn grants_only_the_tauri_commands_to_the_main_window() {
             "allow-tauri-main-window-state",
             "allow-tauri-media-session-update",
             "allow-tauri-global-shortcut-set-registration",
+            "allow-tauri-notification-present",
+            "allow-tauri-tray-set-registration",
             "allow-tauri-plugin-bridge"
         ])
     );
@@ -67,6 +69,31 @@ fn global_shortcut_manifest_scopes_windows_bundled_origins_to_main_only() {
                 "https://tauri.localhost",
             ],
             "capability": "allow-tauri-global-shortcut-set-registration",
+        }])
+    );
+}
+
+#[test]
+fn notification_tray_manifest_scopes_windows_bundled_origins_to_main_only() {
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let manifest = fs::read_to_string(manifest_dir.join("notification-tray-manifest.json"))
+        .expect("notification and tray manifest exists");
+    let manifest: serde_json::Value =
+        serde_json::from_str(&manifest).expect("notification and tray manifest is valid JSON");
+
+    assert_eq!(
+        manifest["callers"],
+        serde_json::json!([{
+            "webview": "main",
+            "origins": [
+                "tauri://localhost",
+                "http://tauri.localhost",
+                "https://tauri.localhost",
+            ],
+            "capabilities": [
+                "allow-tauri-notification-present",
+                "allow-tauri-tray-set-registration",
+            ],
         }])
     );
 }

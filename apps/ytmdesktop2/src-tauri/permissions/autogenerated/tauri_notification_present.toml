@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-tauri-notification-present"
+description = "Enables the tauri_notification_present command without any pre-configured scope."
+commands.allow = ["tauri_notification_present"]
+
+[[permission]]
+identifier = "deny-tauri-notification-present"
+description = "Denies the tauri_notification_present command without any pre-configured scope."
+commands.deny = ["tauri_notification_present"]

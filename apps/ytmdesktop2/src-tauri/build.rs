@@ -6,6 +6,8 @@ fn main() {
             "tauri_window_control",
             "tauri_media_session_update",
             "tauri_global_shortcut_set_registration",
+            "tauri_notification_present",
+            "tauri_tray_set_registration",
             "tauri_plugin_bridge",
         ]),
     ))
