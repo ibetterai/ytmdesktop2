@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "YTMDesktop2 Tauri Feasibility",
+  "version": "0.0.0",
+  "identifier": "com.ibetterai.ytmdesktop2.tauri-spike",
+  "build": {
+    "frontendDist": "ui"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "YTMDesktop2 Tauri Feasibility",
+        "width": 900,
+        "height": 600
+      }
+    ]
+  },
+  "bundle": {
+    "active": false,
+    "icon": ["icons/icon.png"]
+  }
+}

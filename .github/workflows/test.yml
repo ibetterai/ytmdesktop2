@@ -67,3 +67,33 @@ jobs:
           path: test-results/junit.xml
           reporter: java-junit
           fail-on-error: false
+
+  tauri-feasibility:
+    name: Tauri feasibility
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v7
+
+      - name: Install Linux Tauri prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.98.0
+          components: rustfmt
+
+      - name: Compile Tauri feasibility seam
+        run: cargo fmt --manifest-path apps/ytmdesktop2/src-tauri/Cargo.toml -- --check && cargo test --locked --manifest-path apps/ytmdesktop2/src-tauri/Cargo.toml
