@@ -4,7 +4,13 @@ use serde_json::Value;
 pub const GLOBAL_SHORTCUT_CONTRACT_VERSION: u8 = 1;
 
 const MAIN_WEBVIEW_LABEL: &str = "main";
-const MAIN_WEBVIEW_ORIGIN: &str = "tauri://localhost";
+// Tauri 2.11.5 serves bundled assets through the custom `tauri` protocol on most
+// platforms and through these Wry-compatible localhost origins on Windows.
+const MAIN_WEBVIEW_ORIGINS: [&str; 3] = [
+    "tauri://localhost",
+    "http://tauri.localhost",
+    "https://tauri.localhost",
+];
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -93,7 +99,7 @@ fn error(code: GlobalShortcutErrorCode) -> GlobalShortcutRegistrationResult {
 }
 
 fn is_authorized_caller(label: &str, origin: &str) -> bool {
-    label == MAIN_WEBVIEW_LABEL && origin == MAIN_WEBVIEW_ORIGIN
+    label == MAIN_WEBVIEW_LABEL && MAIN_WEBVIEW_ORIGINS.contains(&origin)
 }
 
 fn decode_request(
@@ -149,11 +155,17 @@ fn dispatch_registration(
         .unwrap_or_else(map_backend_error)
 }
 
+fn origin_from_url(url: &tauri::Url) -> Option<String> {
+    let host = url.host_str()?;
+    let origin = match url.port() {
+        Some(port) => format!("{}://{host}:{port}", url.scheme()),
+        None => format!("{}://{host}", url.scheme()),
+    };
+    Some(origin)
+}
+
 fn webview_origin(window: &tauri::WebviewWindow) -> Option<String> {
-    window.url().ok().and_then(|url| {
-        url.host_str()
-            .map(|host| format!("{}://{}", url.scheme(), host))
-    })
+    window.url().ok().and_then(|url| origin_from_url(&url))
 }
 
 /// The sole registration-state command in the inactive feasibility shell.
@@ -186,7 +198,7 @@ mod tests {
             manifest["callers"],
             serde_json::json!([{
                 "webview": MAIN_WEBVIEW_LABEL,
-                "origin": MAIN_WEBVIEW_ORIGIN,
+                "origins": MAIN_WEBVIEW_ORIGINS,
                 "capability": "allow-tauri-global-shortcut-set-registration",
             }])
         );
@@ -271,6 +283,51 @@ mod tests {
         assert_eq!(
             dispatch_registration("main", "tauri://localhost", serde_json::json!({})),
             error(GlobalShortcutErrorCode::InvalidRequest)
+        );
+    }
+
+    #[test]
+    fn accepts_each_platform_bundled_origin_and_keeps_the_backend_inactive() {
+        for origin in MAIN_WEBVIEW_ORIGINS {
+            assert_eq!(
+                dispatch_registration("main", origin, valid_request(true)),
+                error(GlobalShortcutErrorCode::Unavailable),
+                "{origin} must be accepted only for the bundled main webview",
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_lookalikes_ports_malformed_origins_and_non_main_callers() {
+        for origin in [
+            "https://tauri.localhost.evil.example",
+            "https://evil.tauri.localhost",
+            "http://tauri.localhost:8443",
+            "https://tauri.localhost:8443",
+            "tauri://localhost.evil",
+            "not an origin",
+            "",
+        ] {
+            assert_eq!(
+                dispatch_registration("main", origin, valid_request(true)),
+                error(GlobalShortcutErrorCode::UnauthorizedCaller),
+                "{origin} must not be trusted as a bundled origin",
+            );
+        }
+
+        for origin in MAIN_WEBVIEW_ORIGINS {
+            assert_eq!(
+                dispatch_registration("settings", origin, valid_request(true)),
+                error(GlobalShortcutErrorCode::UnauthorizedCaller),
+                "{origin} must not be accepted from a non-main webview",
+            );
+        }
+
+        let remote_lookalike = tauri::Url::parse("http://tauri.localhost:8443/index.html")
+            .expect("lookalike test URL is valid");
+        assert_eq!(
+            origin_from_url(&remote_lookalike).as_deref(),
+            Some("http://tauri.localhost:8443"),
         );
     }
 
