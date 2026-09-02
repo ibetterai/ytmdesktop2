@@ -1,4 +1,5 @@
 import releaseArtifactManifest from "../src-tauri/release-artifact-manifest.json";
+import releaseArtifactStaging from "../src-tauri/release-artifact-staging.json";
 
 export type ReleaseArtifact = Readonly<{
   platform: "macos" | "windows" | "linux";
@@ -18,10 +19,14 @@ type StagedTauriTestArtifact = Readonly<{
   isSigned: boolean;
 }>;
 
-export const TAURI_TEST_RELEASE_ARTIFACT_PATHS = Object.freeze({
-  manifest: "src-tauri/release-artifact-manifest.json",
-  outputDirectory: "src-tauri/target/test-artifacts",
-});
+type TauriTestReleaseArtifactPaths = Readonly<{
+  inputManifest: string;
+  outputDirectory: string;
+}>;
+
+export const TAURI_TEST_RELEASE_ARTIFACT_PATHS = Object.freeze(
+  releaseArtifactStaging as TauriTestReleaseArtifactPaths,
+);
 
 /**
  * The only release-shaped metadata available to the feasibility shell.

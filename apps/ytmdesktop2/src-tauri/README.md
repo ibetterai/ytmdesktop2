@@ -16,13 +16,14 @@ pnpm --filter ytmdesktop2 tauri:dev
 
 ## Test artifact contract
 
-`release-artifact-manifest.json` is the only release-shaped configuration in this
-feasibility seam. It describes one unsigned, macOS/aarch64 **test** artifact and
-uses the distinct Tauri-spike identifier. `src/tauri-release-artifact.ts` fixes
-its input manifest and nominal output directory under `src-tauri/target`; it
-does not accept command-line paths, create artifacts, publish artifacts, contact
-an update endpoint, or expose signing details. Its staging verification output is
-limited to `identityMismatch`, `unsupportedTarget`, and `unsignedArtifact`.
+`release-artifact-manifest.json` describes one unsigned, macOS/aarch64 **test**
+artifact and uses the distinct Tauri-spike identifier. Its companion
+`release-artifact-staging.json` fixes eventual staging input and output locations
+under `src-tauri/target`; neither path accepts command-line or renderer input.
+`src/tauri-release-artifact.ts` only reads the reviewed configuration—it does not
+create artifacts, publish artifacts, contact an update endpoint, or expose signing
+details. Its staging verification output is limited to `identityMismatch`,
+`unsupportedTarget`, and `unsignedArtifact`.
 
 ## Boundary and rollback
 

@@ -17,8 +17,8 @@ describe("Tauri test release artifact", () => {
     expect(TAURI_TEST_RELEASE_ARTIFACT).not.toHaveProperty("updateEndpoint");
     expect(Object.isFrozen(TAURI_TEST_RELEASE_ARTIFACT)).toBe(true);
     expect(TAURI_TEST_RELEASE_ARTIFACT_PATHS).toEqual({
-      manifest: "src-tauri/release-artifact-manifest.json",
-      outputDirectory: "src-tauri/target/test-artifacts",
+      inputManifest: "src-tauri/target/test-artifacts/input/release-artifact-manifest.json",
+      outputDirectory: "src-tauri/target/test-artifacts/output",
     });
   });
 
