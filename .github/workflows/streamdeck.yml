@@ -3,7 +3,6 @@ name: Release Stream Deck Plugin
 on:
   push:
     branches:
-      - master
       - main
     paths:
       - "packages/streamdeck/**"
