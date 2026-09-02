@@ -1,5 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod settings;
+
 use serde::{Deserialize, Serialize};
 
 const CONTRACT_VERSION: u8 = 1;
@@ -135,8 +137,10 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             tauri_shell_info,
             tauri_main_window_state,
-            tauri_window_control
+            tauri_window_control,
+            settings::tauri_settings_snapshot
         ])
+        .manage(settings::SettingsSnapshotState::feasibility_defaults())
         .run(tauri::generate_context!())
         .expect("error while running Tauri feasibility shell");
 }
