@@ -3,7 +3,11 @@
   "callers": [
     {
       "webview": "main",
-      "origin": "tauri://localhost",
+      "origins": [
+        "tauri://localhost",
+        "http://tauri.localhost",
+        "https://tauri.localhost"
+      ],
       "capabilities": [
         "allow-tauri-notification-present",
         "allow-tauri-tray-set-registration"
