@@ -40,12 +40,12 @@ pub struct SettingsSnapshotAppValues {
 #[derive(Debug, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SettingsError {
-    code: SettingsErrorCode,
+    pub code: SettingsErrorCode,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-enum SettingsErrorCode {
+pub enum SettingsErrorCode {
     InvalidKey,
     SettingsUnavailable,
 }
@@ -126,13 +126,12 @@ fn read_store(state: &SettingsSnapshotState) -> Result<SettingsSnapshotStore, Se
         .map_err(|_| settings_unavailable())
 }
 
-#[tauri::command]
-pub fn tauri_settings_snapshot(
-    state: tauri::State<'_, SettingsSnapshotState>,
+pub fn snapshot_from_request(
+    state: &SettingsSnapshotState,
     request: Value,
 ) -> Result<SettingsSnapshot, SettingsError> {
     let request = decode_request(request)?;
-    let store = read_store(&state)?;
+    let store = read_store(state)?;
 
     Ok(snapshot(&store, request))
 }

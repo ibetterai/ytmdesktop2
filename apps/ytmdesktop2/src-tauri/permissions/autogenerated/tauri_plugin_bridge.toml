@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-tauri-plugin-bridge"
+description = "Enables the tauri_plugin_bridge command without any pre-configured scope."
+commands.allow = ["tauri_plugin_bridge"]
+
+[[permission]]
+identifier = "deny-tauri-plugin-bridge"
+description = "Denies the tauri_plugin_bridge command without any pre-configured scope."
+commands.deny = ["tauri_plugin_bridge"]
