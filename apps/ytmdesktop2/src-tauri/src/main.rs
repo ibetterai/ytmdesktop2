@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod global_shortcut;
 mod media_session;
 mod plugin_bridge;
 mod settings;
@@ -141,6 +142,7 @@ fn main() {
             tauri_main_window_state,
             tauri_window_control,
             media_session::tauri_media_session_update,
+            global_shortcut::tauri_global_shortcut_set_registration,
             plugin_bridge::tauri_plugin_bridge
         ])
         .manage(settings::SettingsSnapshotState::feasibility_defaults())

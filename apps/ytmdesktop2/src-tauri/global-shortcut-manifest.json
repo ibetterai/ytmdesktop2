@@ -1,0 +1,25 @@
+{
+  "contractVersion": 1,
+  "callers": [
+    {
+      "webview": "main",
+      "origin": "tauri://localhost",
+      "capability": "allow-tauri-global-shortcut-set-registration"
+    }
+  ],
+  "methods": [
+    {
+      "name": "globalShortcut.setRegistration",
+      "request": "GlobalShortcutRegistrationRequest",
+      "response": "GlobalShortcutRegistrationResult",
+      "errors": ["invalidRequest", "unauthorizedCaller", "unsupported", "unavailable", "operationFailed"]
+    }
+  ],
+  "events": [
+    {
+      "name": "globalShortcut.triggered",
+      "payload": "GlobalShortcutTriggeredEvent",
+      "callers": ["main"]
+    }
+  ]
+}
