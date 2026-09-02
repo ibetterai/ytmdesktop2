@@ -20,7 +20,7 @@ fn defines_an_unsigned_blank_host_window() {
 }
 
 #[test]
-fn grants_only_shell_info_to_the_main_window() {
+fn grants_only_shell_info_and_window_control_to_the_main_window() {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let capability = fs::read_to_string(manifest_dir.join("capabilities/main.json"))
         .expect("feasibility shell has a main-window capability");
@@ -30,6 +30,6 @@ fn grants_only_shell_info_to_the_main_window() {
     assert_eq!(capability["windows"], serde_json::json!(["main"]));
     assert_eq!(
         capability["permissions"],
-        serde_json::json!(["allow-tauri-shell-info"])
+        serde_json::json!(["allow-tauri-shell-info", "allow-tauri-window-control"])
     );
 }
