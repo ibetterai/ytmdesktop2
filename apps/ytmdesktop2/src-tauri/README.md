@@ -26,6 +26,13 @@ bundle). It does not build, sign, launch, or inspect a generated application
 bundle, and needs no network service, account, Accessibility permission, or
 signing identity.
 
+The development-only guard rejects Tauri production configuration in the
+committed Tauri, Cargo, and package manifests: active bundles, signing or
+notarization settings, updater configuration, Tauri build/publish commands,
+Cargo publishing, and Tauri as a default launch command. It deliberately checks
+only this optional Tauri configuration boundary; Electron's release and launch
+configuration remains Electron-owned and is checked separately.
+
 ## Test artifact contract
 
 `release-artifact-manifest.json` describes one unsigned, macOS/aarch64 **test**
@@ -42,3 +49,8 @@ details. Its staging verification output is limited to `identityMismatch`,
 The Electron startup path, renderer routes, feature APIs, updater, signing, packaging, package identity, and release workflow are intentionally untouched. The only repository-level integration is the three `tauri:*` scripts in `apps/ytmdesktop2/package.json` and the non-GUI `tauri-feasibility` check in `.github/workflows/test.yml`.
 
 To roll back the seam, delete `apps/ytmdesktop2/src-tauri`, remove those three scripts and the `tauri-feasibility` job. No Electron data, user state, credentials, packages, or release artifacts require migration or cleanup.
+
+To roll back only the development-only guard, remove
+`src-tauri/tests/development-only-config.mjs` and its invocation in
+`src-tauri/tests/source-config.test.mjs`; this is an additive source-check only
+and does not leave an artifact, certificate, account state, or release change.
