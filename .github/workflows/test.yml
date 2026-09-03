@@ -74,6 +74,9 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v7
 
+      - name: Validate Tauri source configuration
+        run: node --test apps/ytmdesktop2/src-tauri/tests/source-config.test.mjs
+
       - name: Install Linux Tauri prerequisites
         run: |
           sudo apt-get update
