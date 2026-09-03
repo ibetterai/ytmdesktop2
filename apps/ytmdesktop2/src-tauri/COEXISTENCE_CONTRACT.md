@@ -47,6 +47,13 @@ be invoked by the default Electron launcher, Electron packaging/release
 workflow, login item, deep-link handler, or updater. Starting Electron remains
 the normal path even while a tester has opted into the pilot.
 
+`pnpm --filter ytmdesktop2 electron:default-launch-check` reads only the
+committed root and desktop package manifests. It verifies the Electron entry,
+ordinary launch/build scripts, and release/package commands remain on the
+Electron path. Tauri commands, if present, remain explicitly named `tauri:*`
+opt-ins; the check permits no such commands and does not imply a pilot exists,
+is accepted, or is ready to launch.
+
 ## Entry gates and observable outcomes
 
 All gates are cumulative. A missing gate is a stop condition, not a reason to
