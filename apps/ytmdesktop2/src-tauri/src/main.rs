@@ -15,12 +15,39 @@ const YOUTUBE_MUSIC_URL: &str = "https://music.youtube.com/";
 const YOUTUBE_MUSIC_HOST: &str = "music.youtube.com";
 const GOOGLE_ACCOUNTS_HOST: &str = "accounts.google.com";
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum NavigationDecision {
+    AllowYouTubeMusic,
+    AllowGoogleAccounts,
+    BlockMalformedUrl,
+    BlockUnsupportedScheme,
+    BlockExternalOrigin,
+}
+
+impl NavigationDecision {
+    const fn allows_webview_navigation(self) -> bool {
+        matches!(self, Self::AllowYouTubeMusic | Self::AllowGoogleAccounts)
+    }
+}
+
+fn classify_navigation(url: &str) -> NavigationDecision {
+    let Ok(url) = Url::parse(url) else {
+        return NavigationDecision::BlockMalformedUrl;
+    };
+
+    if url.scheme() != "https" {
+        return NavigationDecision::BlockUnsupportedScheme;
+    }
+
+    match url.host_str() {
+        Some(YOUTUBE_MUSIC_HOST) => NavigationDecision::AllowYouTubeMusic,
+        Some(GOOGLE_ACCOUNTS_HOST) => NavigationDecision::AllowGoogleAccounts,
+        _ => NavigationDecision::BlockExternalOrigin,
+    }
+}
+
 fn is_allowed_navigation(url: &Url) -> bool {
-    url.scheme() == "https"
-        && matches!(
-            url.host_str(),
-            Some(YOUTUBE_MUSIC_HOST | GOOGLE_ACCOUNTS_HOST)
-        )
+    classify_navigation(url.as_str()).allows_webview_navigation()
 }
 
 #[derive(Serialize)]
@@ -267,27 +294,66 @@ mod tests {
     }
 
     #[test]
-    fn navigation_is_limited_to_youtube_music_and_google_accounts_over_https() {
-        for allowed_url in [
-            "https://music.youtube.com/",
-            "https://music.youtube.com/watch?v=test",
-            "https://accounts.google.com/signin/v2/identifier",
-        ] {
-            assert!(is_allowed_navigation(
-                &Url::parse(allowed_url).expect("test URL is valid")
-            ));
+    fn navigation_policy_classifies_literal_urls_without_network_access() {
+        struct Fixture {
+            url: &'static str,
+            expected: NavigationDecision,
         }
 
-        for rejected_url in [
-            "http://music.youtube.com/",
-            "https://www.youtube.com/",
-            "https://accounts.google.com.evil.example/",
-            "https://example.com/",
-            "file:///tmp/index.html",
-        ] {
-            assert!(!is_allowed_navigation(
-                &Url::parse(rejected_url).expect("test URL is valid")
-            ));
+        let fixtures = [
+            Fixture {
+                url: "not a valid URL",
+                expected: NavigationDecision::BlockMalformedUrl,
+            },
+            Fixture {
+                url: "http://music.youtube.com/",
+                expected: NavigationDecision::BlockUnsupportedScheme,
+            },
+            Fixture {
+                url: "file:///tmp/index.html",
+                expected: NavigationDecision::BlockUnsupportedScheme,
+            },
+            Fixture {
+                url: "https://www.youtube.com/",
+                expected: NavigationDecision::BlockExternalOrigin,
+            },
+            Fixture {
+                url: "https://music.youtube.com.evil.example/",
+                expected: NavigationDecision::BlockExternalOrigin,
+            },
+            Fixture {
+                url: "https://accounts.google.com.evil.example/",
+                expected: NavigationDecision::BlockExternalOrigin,
+            },
+            Fixture {
+                url: "https://example.com/",
+                expected: NavigationDecision::BlockExternalOrigin,
+            },
+            Fixture {
+                url: "https://music.youtube.com/",
+                expected: NavigationDecision::AllowYouTubeMusic,
+            },
+            Fixture {
+                url: "https://music.youtube.com/watch?v=test#queue",
+                expected: NavigationDecision::AllowYouTubeMusic,
+            },
+            Fixture {
+                url: "https://music.youtube.com:8443/",
+                expected: NavigationDecision::AllowYouTubeMusic,
+            },
+            Fixture {
+                url: "https://accounts.google.com/signin/v2/identifier",
+                expected: NavigationDecision::AllowGoogleAccounts,
+            },
+        ];
+
+        for fixture in fixtures {
+            assert_eq!(
+                classify_navigation(fixture.url),
+                fixture.expected,
+                "{}",
+                fixture.url
+            );
         }
     }
 }
