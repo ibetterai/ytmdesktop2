@@ -8,11 +8,23 @@ From the repository root, use the pinned pnpm and Rust toolchains:
 
 ```sh
 pnpm install --frozen-lockfile
+pnpm --filter ytmdesktop2 tauri:source-check
 pnpm --filter ytmdesktop2 tauri:check
 pnpm --filter ytmdesktop2 tauri:dev
 ```
 
-`tauri:check` runs `cargo fmt --check` and `cargo test`; it compiles the Tauri shell and validates the Tauri configuration without opening a display window. `tauri:dev` runs the same isolated crate and opens the blank host window.
+`tauri:check` first runs `tauri:source-check`, then runs `cargo fmt --check` and
+`cargo test`; it compiles the Tauri shell without opening a display window.
+`tauri:dev` runs the same isolated crate and opens the blank host window.
+
+## Offline source configuration validation
+
+`tauri:source-check` reads only committed source files and uses Node's built-in
+test runner. It pins the distinct Tauri test identity, macOS/aarch64 test-target
+intent, and the local-only defaults (`frontendDist: "ui"` and an inactive
+bundle). It does not build, sign, launch, or inspect a generated application
+bundle, and needs no network service, account, Accessibility permission, or
+signing identity.
 
 ## Test artifact contract
 
@@ -27,6 +39,6 @@ details. Its staging verification output is limited to `identityMismatch`,
 
 ## Boundary and rollback
 
-The Electron startup path, renderer routes, feature APIs, updater, signing, packaging, package identity, and release workflow are intentionally untouched. The only repository-level integration is the two `tauri:*` scripts in `apps/ytmdesktop2/package.json` and the non-GUI `tauri-feasibility` check in `.github/workflows/test.yml`.
+The Electron startup path, renderer routes, feature APIs, updater, signing, packaging, package identity, and release workflow are intentionally untouched. The only repository-level integration is the three `tauri:*` scripts in `apps/ytmdesktop2/package.json` and the non-GUI `tauri-feasibility` check in `.github/workflows/test.yml`.
 
-To roll back the seam, delete `apps/ytmdesktop2/src-tauri`, remove those two scripts and the `tauri-feasibility` job. No Electron data, user state, credentials, packages, or release artifacts require migration or cleanup.
+To roll back the seam, delete `apps/ytmdesktop2/src-tauri`, remove those three scripts and the `tauri-feasibility` job. No Electron data, user state, credentials, packages, or release artifacts require migration or cleanup.
