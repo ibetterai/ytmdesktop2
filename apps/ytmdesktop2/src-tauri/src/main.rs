@@ -7,9 +7,21 @@ mod plugin_bridge;
 mod settings;
 
 use serde::{Deserialize, Serialize};
+use tauri::{Url, WebviewUrl, WebviewWindowBuilder};
 
 const CONTRACT_VERSION: u8 = 1;
-const SHELL_ID: &str = "ytmdesktop2-tauri-feasibility";
+const SHELL_ID: &str = "ytmdesktop2-tauri";
+const YOUTUBE_MUSIC_URL: &str = "https://music.youtube.com/";
+const YOUTUBE_MUSIC_HOST: &str = "music.youtube.com";
+const GOOGLE_ACCOUNTS_HOST: &str = "accounts.google.com";
+
+fn is_allowed_navigation(url: &Url) -> bool {
+    url.scheme() == "https"
+        && matches!(
+            url.host_str(),
+            Some(YOUTUBE_MUSIC_HOST | GOOGLE_ACCOUNTS_HOST)
+        )
+}
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -138,6 +150,19 @@ fn tauri_window_control(
 
 fn main() {
     tauri::Builder::default()
+        .setup(|app| {
+            let music_url =
+                Url::parse(YOUTUBE_MUSIC_URL).expect("the YouTube Music start URL is a valid URL");
+
+            WebviewWindowBuilder::new(app, "main", WebviewUrl::External(music_url))
+                .title("YouTube Music")
+                .inner_size(1200.0, 800.0)
+                .min_inner_size(800.0, 600.0)
+                .on_navigation(is_allowed_navigation)
+                .build()?;
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             tauri_shell_info,
             tauri_main_window_state,
@@ -150,7 +175,7 @@ fn main() {
         ])
         .manage(settings::SettingsSnapshotState::feasibility_defaults())
         .run(tauri::generate_context!())
-        .expect("error while running Tauri feasibility shell");
+        .expect("error while running the YouTube Music Tauri app");
 }
 
 #[cfg(test)]
@@ -162,7 +187,7 @@ mod tests {
         let info = tauri_shell_info();
 
         assert_eq!(info.contract_version, 1);
-        assert_eq!(info.shell_id, "ytmdesktop2-tauri-feasibility");
+        assert_eq!(info.shell_id, "ytmdesktop2-tauri");
         assert_eq!(info.shell_version, env!("CARGO_PKG_VERSION"));
     }
 
@@ -175,7 +200,7 @@ mod tests {
             serialized,
             serde_json::json!({
                 "contractVersion": 1,
-                "shellId": "ytmdesktop2-tauri-feasibility",
+                "shellId": "ytmdesktop2-tauri",
                 "shellVersion": env!("CARGO_PKG_VERSION"),
             })
         );
@@ -239,5 +264,30 @@ mod tests {
                 is_maximized: false
             }
         );
+    }
+
+    #[test]
+    fn navigation_is_limited_to_youtube_music_and_google_accounts_over_https() {
+        for allowed_url in [
+            "https://music.youtube.com/",
+            "https://music.youtube.com/watch?v=test",
+            "https://accounts.google.com/signin/v2/identifier",
+        ] {
+            assert!(is_allowed_navigation(
+                &Url::parse(allowed_url).expect("test URL is valid")
+            ));
+        }
+
+        for rejected_url in [
+            "http://music.youtube.com/",
+            "https://www.youtube.com/",
+            "https://accounts.google.com.evil.example/",
+            "https://example.com/",
+            "file:///tmp/index.html",
+        ] {
+            assert!(!is_allowed_navigation(
+                &Url::parse(rejected_url).expect("test URL is valid")
+            ));
+        }
     }
 }

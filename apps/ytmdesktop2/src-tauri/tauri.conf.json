@@ -1,23 +1,17 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "YTMDesktop2 Tauri Feasibility",
-  "version": "0.0.0",
-  "identifier": "com.ibetterai.ytmdesktop2.tauri-spike",
+  "productName": "YouTube Music Tauri",
+  "version": "0.1.0",
+  "identifier": "com.ibetterai.ytmdesktop2.tauri",
   "build": {
     "frontendDist": "ui"
   },
   "app": {
-    "windows": [
-      {
-        "label": "main",
-        "title": "YTMDesktop2 Tauri Feasibility",
-        "width": 900,
-        "height": 600
-      }
-    ]
+    "windows": []
   },
   "bundle": {
-    "active": false,
-    "icon": ["icons/icon.png"]
+    "active": true,
+    "targets": ["app"],
+    "icon": ["icons/icon.icns", "icons/icon.png"]
   }
 }
