@@ -2,6 +2,9 @@ const defaultScriptNames = ["dev", "start", "build"];
 const electronEntrypoint = "./out/main/index.js";
 const electronTooling = /\belectron-(?:vite|builder)\b/i;
 const tauriInvocation = /\btauri(?::|\b)/i;
+const tauriDeveloperLaunch = /\b(?:cargo\s+run|tauri\s+dev)\b/i;
+const electronAppId = "net.venipa.ytmdesktop";
+const tauriSpikeIdentifier = "com.ibetterai.ytmdesktop2.tauri-spike";
 
 function requireScript(scripts, scriptName, packageName) {
   const command = scripts?.[scriptName];
@@ -81,4 +84,58 @@ export function assertElectronDefaultLaunch({ workspacePackage, desktopPackage }
       name.startsWith("tauri:"),
     ),
   };
+}
+
+/**
+ * Verifies the explicit Tauri developer opt-in and the Electron identity/
+ * deep-link configuration without executing either desktop implementation.
+ */
+export function assertTauriDeveloperLaunchIsOptIn({
+  desktopPackage,
+  electronBuilderConfig,
+  tauriConfig,
+}) {
+  const scripts = desktopPackage?.scripts ?? {};
+  const developerLaunchers = Object.entries(scripts).filter(([, command]) =>
+    tauriDeveloperLaunch.test(command),
+  );
+
+  if (developerLaunchers.length === 0) {
+    throw new Error("an explicit tauri:dev developer launcher must remain defined");
+  }
+
+  for (const [name] of developerLaunchers) {
+    if (!name.startsWith("tauri:")) {
+      throw new Error("Tauri developer launchers must use an explicit tauri: script name");
+    }
+  }
+
+  if (!tauriDeveloperLaunch.test(scripts["tauri:dev"] ?? "")) {
+    throw new Error("tauri:dev must remain the explicit Tauri developer launcher");
+  }
+
+  if (!/^appId:\s*net\.venipa\.ytmdesktop\s*$/m.test(electronBuilderConfig)) {
+    throw new Error(`Electron appId must remain ${electronAppId}`);
+  }
+
+  if (
+    !/protocols:\s*\n\s*-\s+name:[^\n]*\n\s+schemes:\s*\n\s+-\s+ytmd\s*$/m.test(
+      electronBuilderConfig,
+    )
+  ) {
+    throw new Error("Electron must remain the owner of the ytmd protocol");
+  }
+
+  if (tauriConfig?.identifier !== tauriSpikeIdentifier) {
+    throw new Error("Tauri identifier must remain distinct from Electron appId");
+  }
+
+  if (
+    tauriConfig?.plugins?.["deep-link"] !== undefined ||
+    tauriConfig?.app?.deepLink !== undefined
+  ) {
+    throw new Error("Tauri must not claim Electron's protocol through configuration");
+  }
+
+  return { developerLaunchers: developerLaunchers.map(([name]) => name) };
 }
