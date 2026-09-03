@@ -1,32 +1,34 @@
-# Tauri feasibility seam
+# Minimal macOS Tauri YouTube Music app
 
-This directory is a Phase 0 strangler-migration spike. It creates one unsigned, blank local Tauri host window and does not import, call, or replace any Electron code.
+This directory builds a standalone, separately identified macOS Tauri app. It opens
+`https://music.youtube.com` in Tauri's system WKWebView, permits only the YouTube
+Music and Google Accounts sign-in origins for top-level navigation, and grants the
+remote page no Tauri commands or plugins. Users sign in directly in this app's
+separate Tauri profile; no Electron cookies or state are imported.
 
 ## Local commands
 
 From the repository root, use the pinned pnpm and Rust toolchains:
 
 ```sh
+rustup run stable cargo install tauri-cli --version 2.11.4 --locked
 pnpm install --frozen-lockfile
 pnpm --filter ytmdesktop2 tauri:check
 pnpm --filter ytmdesktop2 tauri:dev
+pnpm --filter ytmdesktop2 tauri:build:mac
 ```
 
-`tauri:check` runs `cargo fmt --check` and `cargo test`; it compiles the Tauri shell and validates the Tauri configuration without opening a display window. `tauri:dev` runs the same isolated crate and opens the blank host window.
-
-## Test artifact contract
-
-`release-artifact-manifest.json` describes one unsigned, macOS/aarch64 **test**
-artifact and uses the distinct Tauri-spike identifier. Its companion
-`release-artifact-staging.json` fixes eventual staging input and output locations
-under `src-tauri/target`; neither path accepts command-line or renderer input.
-`src/tauri-release-artifact.ts` only reads the reviewed configuration—it does not
-create artifacts, publish artifacts, contact an update endpoint, or expose signing
-details. Its staging verification output is limited to `identityMismatch`,
-`unsupportedTarget`, and `unsignedArtifact`.
+`tauri:check` runs `cargo fmt --check` and locked Rust tests. `tauri:dev` opens
+the native app for a local sign-in/playback smoke test. `tauri:build:mac` emits an
+unsigned `.app` under `src-tauri/target/release/bundle/macos`; it contains a Tauri
+WKWebView runtime, not Electron or Chromium.
 
 ## Boundary and rollback
 
-The Electron startup path, renderer routes, feature APIs, updater, signing, packaging, package identity, and release workflow are intentionally untouched. The only repository-level integration is the two `tauri:*` scripts in `apps/ytmdesktop2/package.json` and the non-GUI `tauri-feasibility` check in `.github/workflows/test.yml`.
+The Electron startup path, renderer routes, feature APIs, updater, signing, packaging,
+and default launch remain untouched. The Tauri app has its own bundle identifier and
+does not take over Electron's package or protocol identity.
 
-To roll back the seam, delete `apps/ytmdesktop2/src-tauri`, remove those two scripts and the `tauri-feasibility` job. No Electron data, user state, credentials, packages, or release artifacts require migration or cleanup.
+To roll back this app, remove the Tauri-specific files and `tauri:*` scripts. No
+Electron data, user state, credentials, packages, or release artifacts require
+migration or cleanup.

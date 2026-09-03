@@ -4436,8 +4436,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "ytmdesktop2-tauri-feasibility"
-version = "0.0.0"
+name = "ytmdesktop2-tauri"
+version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
